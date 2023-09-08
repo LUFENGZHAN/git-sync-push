@@ -1,0 +1,12 @@
+{
+  "name": "git-sync-push",
+  "version": "0.0.4",
+  "description": "",
+  "main": "index.js",
+  "bin": "index.js",
+  "author": "lfz",
+  "license": "MIT",
+  "exclude": [
+    "node_modules"
+  ]
+}

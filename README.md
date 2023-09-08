@@ -1,0 +1,2 @@
+# gitSyncIns
+本地git仓库推送到远程独立仓库

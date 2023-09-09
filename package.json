@@ -2,11 +2,21 @@
   "name": "git-sync-push",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
-  "bin": "index.js",
+  "main": "index.ts",
+  "bin": "index.ts",
   "author": "lfz",
   "license": "MIT",
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "devDependencies": {
+    "@types/node": "^20.5.9"
+  },
+  "dependencies": {
+    "chalk": "^3.0.0",
+    "fs": "^0.0.1-security",
+    "inquirer": "^8.2.0",
+    "path": "^0.12.7",
+    "simple-git": "^3.19.1"
+  }
 }

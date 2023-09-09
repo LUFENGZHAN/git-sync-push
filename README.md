@@ -23,6 +23,3 @@ npm install  git-sync-push -g
 ```
 第四步：是否使用当前分支进行同步并推送，
 ```
-## 注意事项
-服务有问题试着输入下方命令
-> `npm i ts-node -g`

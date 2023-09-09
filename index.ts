@@ -1,5 +1,3 @@
-#! /usr/bin/env node
-
 const inquirer = require("inquirer");
 const simpleGit = require("simple-git");
 const fs = require("fs");
@@ -22,7 +20,7 @@ let value_index = 0;
 let data_origin;
 let def_val = false;
 
-async function main() {
+(async function main() {
     try {
         console.log(chalk.green("使用 shift + ins 键实现粘贴内容"));
         await inquirer
@@ -233,36 +231,52 @@ async function main() {
                 .then((answers) => {
                     commit = answers.commit;
                 });
+            const start_continuous = continuous("正在添加中...");
+
             await git
                 .add("./*")
                 .then(() => {
+                    clearInterval(start_continuous);
                     console.log(chalk.green("添加成功"));
                 })
                 .catch(() => {
+                    clearInterval(start_continuous);
                     console.log(chalk.red("添加失败"));
                 });
+            const war_continuous = continuous("正在提交中...");
             await git
                 .commit(commit)
                 .then(() => {
+                    clearInterval(war_continuous);
                     console.log(chalk.green("提交成功"));
                 })
                 .catch(() => {
+                    clearInterval(war_continuous);
                     console.log(chalk.red("提交失败"));
                 });
-
+            const success = continuous("正在推送中...");
             await git
                 .push(["-f", "-u", origin_name, currentBranch])
                 .then(() => {
+                    clearInterval(success);
                     console.log(chalk.green("推送成功"));
                 })
                 .catch(() => {
-                    console.log(chalk.red("推送失败"));
+                    clearInterval(success);
+                    console.log(chalk.yellow("推送失败"));
                 });
         }
     } catch (error) {
         console.log("error" + error);
     }
+})();
+
+function continuous(params) {
+    return setInterval(() => {
+        console.log(chalk.yellow(params));
+    }, 500);
 }
+
 async function existsSyncFn() {
     let arr = target_url.split("\\");
     let arr_new = [];
@@ -331,4 +345,3 @@ function copyFolderSync_index(source, target) {
         }
     });
 }
-main();

@@ -11,9 +11,12 @@ const workingDir = process.cwd();
 let branchesList = [];
 let currentBranch = "";
 let file_name = "";
-let answers_file = "";
+let target_url = "";
 let commit = "";
 let origin_name = "";
+let remote_name = "";
+let remote_url = "";
+let remote_branch = "";
 let index_value = 0;
 let value_index = 0;
 let data_origin;
@@ -48,21 +51,21 @@ async function main() {
             .then((answers) => {
                 const {file_url, url} = answers;
                 file_name = file_url;
-                answers_file = url;
+                target_url = url;
             });
         if (!fs.existsSync(file_name)) return console.log(chalk.red(`未发现${file_name}目录`));
-        copyFolderSync_index(file_name, answers_file);
+        copyFolderSync_index(file_name, target_url);
         const list = fs.readdirSync(file_name);
         if (list.length === 0) return console.log(chalk.red(`${file_name}目录为空`));
 
         await existsSyncFn();
 
-        const git = simpleGit(answers_file);
+        const git = simpleGit(target_url);
         await git
             .status()
             .then(() => {})
             .catch(async () => {
-                console.log(chalk.red("该目录及父级目录中不存在.git"));
+                console.log(chalk.red("标目录不属于.git仓库"));
                 await inquirer
                     .prompt([
                         {
@@ -72,10 +75,45 @@ async function main() {
                             default: false,
                         },
                     ])
-                    .then((answers) => {
+                    .then(async (answers) => {
                         const {choice} = answers;
                         if (choice) {
-                            copyFolderSync(file_name, answers_file);
+                            copyFolderSync(file_name, target_url);
+                            // await inquirer
+                            //     .prompt([
+                            //         {
+                            //             type: "input",
+                            //             name: "name",
+                            //             message: "请输入远程仓库名称",
+                            //             default: "origin",
+                            //         },
+                            //         {
+                            //             type: "input",
+                            //             name: "url",
+                            //             message: "请输入远程仓库地址",
+                            //             default: "http|https",
+                            //             validate: function (val) {
+                            //                 const done = this.async();
+                            //                 const reg = new RegExp(/(http|https):\/\/([\w.]+\/?)\S*/, "g");
+                            //                 if (reg.test(val)) {
+                            //                     done(null, true);
+                            //                 }
+                            //                 done("请输入远程仓库地址");
+                            //             },
+                            //         },
+                            //         {
+                            //             type: "input",
+                            //             name: "url",
+                            //             message: "请输入远程分支名",
+                            //             default: "master",
+                            //         },
+                            //     ])
+                            //     .then((answers) => {
+                            //         const {name, url, branch} = answers;
+                            //         remote_name = name;
+                            //         remote_url = url;
+                            //         remote_branch = branch;
+                            //     });
                         }
                     });
                 process.exit();
@@ -88,7 +126,7 @@ async function main() {
         await git.listRemote(["--refs"], async (err, data) => {
             if (err) {
                 console.error(err, "err");
-                return;
+                process.exit();
             }
             // 解析输出并获取分支列表
             branchesList = data
@@ -99,7 +137,7 @@ async function main() {
         await git.getRemotes(async (err, data) => {
             if (err) {
                 console.error(err, "err");
-                return;
+                process.exit();
             }
             data_origin = data.map((v) => v.name);
             console.log(chalk.green("存在的远程仓库有", data_origin));
@@ -129,14 +167,15 @@ async function main() {
                 {
                     type: "confirm",
                     name: "choice",
-                    message: `请是否使用当前分支${currentBranch}分支进行同步并推送`,
-                    default: false,
+                    message: `请是否使用当前${currentBranch}分支进行同步并推送`,
+                    default: true,
                 },
             ])
             .then((answers) => {
                 def_val = answers.choice;
             });
-        if (def_val) {
+        if (!def_val) {
+            console.log(def_val);
             await inquirer
                 .prompt([
                     {
@@ -160,12 +199,15 @@ async function main() {
         await new Promise((resolve) => {
             fs.exists(file_name, async (directory) => {
                 if (!directory) return console.log("未找到目录");
-                fs.exists(answers_file, (is_hide) => {
+                fs.exists(target_url, (is_hide) => {
                     if (is_hide) {
                         resolvefile(resolve);
                     } else {
-                        fs.mkdir(answers_file, (err) => {
-                            if (err) return console.log("错误" + err);
+                        fs.mkdir(target_url, (err) => {
+                            if (err) {
+                                console.log("错误" + err);
+                                process.exit();
+                            }
                             resolvefile(resolve);
                         });
                     }
@@ -173,7 +215,7 @@ async function main() {
             });
         });
         await new Promise((resolve) => {
-            copyFolderSync(file_name, answers_file);
+            copyFolderSync(file_name, target_url);
             if (index_value === value_index) resolve("");
             else console.log(chalk.red("创建失败"));
         });
@@ -222,16 +264,16 @@ async function main() {
     }
 }
 async function existsSyncFn() {
-    let arr = answers_file.split("\\");
+    let arr = target_url.split("\\");
     let arr_new = [];
     let len = arr.length;
     while (len !== 0) {
         if (len !== arr.length) {
             var reg = new RegExp("\\\\" + arr[len], "gi");
-            let newstr = answers_file.split(reg)[0];
+            let newstr = target_url.split(reg)[0];
             arr_new.unshift(newstr);
         } else {
-            arr_new.push(answers_file);
+            arr_new.push(target_url);
         }
         len--;
     }
@@ -248,10 +290,10 @@ async function existsSyncFn() {
     });
 }
 function resolvefile(resolve) {
-    const list = fs.readdirSync(answers_file);
+    const list = fs.readdirSync(target_url);
     if (list.length === 0) return resolve("");
     list.forEach((file, index, arr) => {
-        const sourcePath = path.join(answers_file, file);
+        const sourcePath = path.join(target_url, file);
         fs.rm(sourcePath, {recursive: true}, (err) => {
             if (err) {
                 console.log(chalk.red(err));
@@ -274,7 +316,7 @@ function copyFolderSync(source, target) {
         } else {
             value_index++;
             fs.copyFileSync(sourcePath, targetPath);
-            console.log(`生成新文件${file}=====` + "(" + `${value_index}/` + chalk.green(index_value) + ")");
+            console.log(`生成新文件${file}——————————————————————————` + "(" + `${value_index}/` + chalk.green(index_value) + ")");
         }
     });
 }

@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 const inquirer = require("inquirer");
 const simpleGit = require("simple-git");
 const fs = require("fs");
@@ -165,7 +166,7 @@ let def_val = false;
                 {
                     type: "confirm",
                     name: "choice",
-                    message: `请是否使用当前${currentBranch}分支进行同步并推送`,
+                    message: `是否使用当前${currentBranch}分支进行同步并推送`,
                     default: true,
                 },
             ])
@@ -191,7 +192,7 @@ let def_val = false;
                 });
         }
         await git.checkout(currentBranch).then(() => {
-            console.log(chalk.green(`成功拉取${origin_name}分支代码至${origin_name}`));
+            console.log(chalk.green(`已成功拉取${origin_name}分支代码至${origin_name}`));
             return git.pull(origin_name, currentBranch);
         });
         await new Promise((resolve) => {

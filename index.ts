@@ -292,6 +292,7 @@ async function existsSyncFn() {
         }
         len--;
     }
+    arr= await arr.filter(e=>e)
     arr_new = await arr_new.filter((v, i, arrs) => arrs.indexOf(v) === i);
     if (arr.length !== arr_new.length) {
         console.log(chalk.red(`创建失败`));

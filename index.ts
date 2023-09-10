@@ -34,16 +34,19 @@ let def_val = false;
                 },
                 {
                     type: "input",
-                    message: "请输入要放入文件的绝对路径",
+                    message: "请输入目标文件的绝对路径",
                     name: "url",
                     default: "C:\\dist",
                     validate: function (val) {
                         const done = this.async();
-                        const reg = new RegExp(/([a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+,)*[a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+(\\?)$/g);
+                        const reg = new RegExp(/([a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+,)*[a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+(\\?)*$/g);
+                        const reg_one = new RegExp(/^([a-zA-Z]:)(\\[^/\\:*?"<>|]+\\?)*$/g);
                         if (reg.test(val)) {
                             done(null, true);
+                        } else if (reg_one.test(val)) {
+                            done(null, true);
                         }
-                        done("请输入要放入文件的绝对路径如:C:\\Users\\Destop\\index");
+                        done("请输入目标文件的绝对路径如:C:\\index\\dad");
                     },
                 },
             ])
@@ -56,21 +59,19 @@ let def_val = false;
         copyFolderSync_index(file_name, target_url);
         const list = fs.readdirSync(file_name);
         if (list.length === 0) return console.log(chalk.red(`${file_name}目录为空`));
-
         await existsSyncFn();
-
         const git = simpleGit(target_url);
         await git
             .status()
             .then(() => {})
             .catch(async () => {
-                console.log(chalk.red("标目录不属于.git仓库"));
+                console.log(chalk.red("该目录不属于.git仓库"));
                 await inquirer
                     .prompt([
                         {
                             type: "confirm",
                             name: "choice",
-                            message: `目标目录不属于.git仓库是否继续复制文件`,
+                            message: `该目录不属于.git仓库是否继续复制文件`,
                             default: false,
                         },
                     ])
@@ -139,7 +140,7 @@ let def_val = false;
                 process.exit();
             }
             data_origin = data.map((v) => v.name);
-            console.log(chalk.green("存在的远程仓库有", data_origin));
+            console.log(chalk.green("已存在的远程仓库有", data_origin));
         });
         await inquirer
             .prompt([

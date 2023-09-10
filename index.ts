@@ -18,6 +18,8 @@ let remote_url = "";
 let remote_branch = "";
 let index_value = 0;
 let value_index = 0;
+let target_index = 0;
+let target_len = 0;
 let data_origin;
 let def_val = false;
 
@@ -56,8 +58,19 @@ let def_val = false;
                 target_url = url;
             });
         if (!fs.existsSync(file_name)) return console.log(chalk.red(`未发现${file_name}目录`));
-        copyFolderSync_index(file_name, target_url);
         const list = fs.readdirSync(file_name);
+        copyFolderSync_index(file_name, target_url);
+        if (fs.existsSync(target_url)) {
+            const target_list = fs.readdirSync(target_url);
+            if (target_list) {
+                target_list.forEach((value, i) => {
+                    if (value !== ".git") {
+                        target_len++;
+                        console.log("将会删除" + chalk.yellow(value) + "文件", i);
+                    }
+                });
+            }
+        }
         if (list.length === 0) return console.log(chalk.red(`${file_name}目录为空`));
         await existsSyncFn();
         const git = simpleGit(target_url);
@@ -116,7 +129,6 @@ let def_val = false;
                             //     });
                         }
                     });
-                process.exit();
             });
         await git.branch((error, result) => {
             if (error) console.error(error);
@@ -162,20 +174,23 @@ let def_val = false;
                 const {originName} = answers;
                 origin_name = originName;
             });
-        await inquirer
-            .prompt([
-                {
-                    type: "confirm",
-                    name: "choice",
-                    message: `是否使用当前${currentBranch}分支进行同步并推送`,
-                    default: true,
-                },
-            ])
-            .then((answers) => {
-                def_val = answers.choice;
-            });
+        if (currentBranch) {
+            await inquirer
+                .prompt([
+                    {
+                        type: "confirm",
+                        name: "choice",
+                        message: `是否使用当前${currentBranch}分支进行同步并推送`,
+                        default: true,
+                    },
+                ])
+                .then((answers) => {
+                    def_val = answers.choice;
+                });
+        } else {
+            def_val = false;
+        }
         if (!def_val) {
-            console.log(def_val);
             await inquirer
                 .prompt([
                     {
@@ -196,30 +211,25 @@ let def_val = false;
             console.log(chalk.green(`已成功拉取${origin_name}分支代码至${origin_name}`));
             return git.pull(origin_name, currentBranch);
         });
-        await new Promise((resolve) => {
-            fs.exists(file_name, async (directory) => {
-                if (!directory) return console.log("未找到目录");
-                fs.exists(target_url, (is_hide) => {
-                    if (is_hide) {
-                        resolvefile(resolve);
-                    } else {
-                        fs.mkdir(target_url, (err) => {
-                            if (err) {
-                                console.log("错误" + err);
-                                process.exit();
-                            }
-                            resolvefile(resolve);
-                        });
-                    }
-                });
+        let temporary;
+        new Promise(async (resolve) => {
+            await resolvefile();
+            temporary = setInterval(() => {
+                if (target_index === target_len) {
+                    console.log(`${target_index}个文件/目录${chalk.green("已全部删除")}`);
+                    return resolve('')
+                }
+            }, 500);
+        }).then(() => {
+            clearInterval(temporary);
+            new Promise(async (resolve) => {
+                await copyFolderSync(file_name, target_url);
+                if (index_value === value_index) return resolve("");
+                console.log(123);
+            }).then(() => {
+                Gitpush();
             });
         });
-        await new Promise((resolve) => {
-            copyFolderSync(file_name, target_url);
-            if (index_value === value_index) resolve("");
-            else console.log(chalk.red("创建失败"));
-        });
-        Gitpush();
         async function Gitpush() {
             await inquirer
                 .prompt([
@@ -306,19 +316,20 @@ async function existsSyncFn() {
         }
     });
 }
-function resolvefile(resolve) {
-    const list = fs.readdirSync(target_url);
-    if (list.length === 0) return resolve("");
-    list.forEach((file, index, arr) => {
+function resolvefile() {
+    const resolvefilelist = fs.readdirSync(target_url);
+    resolvefilelist.forEach((file) => {
         const sourcePath = path.join(target_url, file);
-        fs.rm(sourcePath, {recursive: true}, (err) => {
-            if (err) {
-                console.log(chalk.red(err));
-                return process.exit();
-            }
-            console.log("删除原有文件", file);
-            if (index === arr.length - 1) return resolve("");
-        });
+        if (file !== ".git") {
+            fs.rm(sourcePath, {recursive: true}, (err) => {
+                if (err) {
+                    console.log(chalk.red(err));
+                    return process.exit();
+                }
+                target_index++;
+                console.log(`删除原有文${chalk.yellow(file)}————————————${target_index}/${chalk.green(target_len)}`);
+            });
+        }
     });
 }
 function copyFolderSync(source, target) {
@@ -333,10 +344,11 @@ function copyFolderSync(source, target) {
         } else {
             value_index++;
             fs.copyFileSync(sourcePath, targetPath);
-            console.log(`生成新文件${file}——————————————————————————` + "(" + `${value_index}/` + chalk.green(index_value) + ")");
+            console.log(`生成新文件${file}—————————————` + "(" + `${value_index}/` + chalk.green(index_value) + ")");
         }
     });
 }
+
 function copyFolderSync_index(source, target) {
     fs.readdirSync(source).forEach((file) => {
         const sourcePath = path.join(source, file);

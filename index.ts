@@ -225,7 +225,6 @@ let def_val = false;
             new Promise(async (resolve) => {
                 await copyFolderSync(file_name, target_url);
                 if (index_value === value_index) return resolve("");
-                console.log(123);
             }).then(() => {
                 Gitpush();
             });

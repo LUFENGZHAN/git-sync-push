@@ -22,9 +22,10 @@ let target_index = 0;
 let target_len = 0;
 let data_origin;
 let def_val = false;
-let del_gitpush = true;
-
-(async function main() {
+let del_gitpush = false;
+let git;
+main()
+async function main() {
     try {
         console.log(chalk.green("使用 shift + ins 键实现粘贴内容"));
         await inquirer
@@ -55,12 +56,12 @@ let del_gitpush = true;
                 {
                     type: "confirm",
                     name: "choice",
-                    message: `是否需要复制文件`,
-                    default: true,
+                    message: `仅推送不复制文件`,
+                    default: false,
                 },
             ])
             .then((answers) => {
-                const {file_url, url,choice} = answers;
+                const {file_url, url, choice} = answers;
                 file_name = file_url;
                 target_url = url;
                 del_gitpush = choice;
@@ -71,7 +72,7 @@ let del_gitpush = true;
         await count_length();
         if (list.length === 0) return console.log(chalk.red(`${file_name}目录为空`));
         await existsSyncFn();
-        const git = simpleGit(target_url);
+        git = simpleGit(target_url);
         await git
             .status()
             .then(() => {})
@@ -213,80 +214,34 @@ let del_gitpush = true;
         });
         await count_length();
         let temporary;
-        new Promise(async (resolve,rej) => {
+        new Promise(async (resolve, rej) => {
             await resolvefile();
             temporary = setInterval(() => {
-                if (!del_gitpush) {
-                    return rej('')
+                if (del_gitpush) {
+                    return rej("");
                 } else if (target_index === target_len) {
                     console.log(`${target_index}个文件/目录${chalk.green("已全部删除")}`);
                     return resolve("");
                 }
             }, 500);
-        }).then(() => {
-            clearInterval(temporary);
-            new Promise(async (resolve) => {
-                await copyFolderSync(file_name, target_url);
-                if (index_value === value_index) return resolve("");
-            }).then(() => {
+        })
+            .then(() => {
+                clearInterval(temporary);
+                new Promise(async (resolve) => {
+                    await copyFolderSync(file_name, target_url);
+                    if (index_value === value_index) return resolve("");
+                }).then(() => {
+                    Gitpush();
+                });
+            })
+            .catch(() => {
+                clearInterval(temporary);
                 Gitpush();
             });
-        }).catch(()=>{
-            clearInterval(temporary);
-            Gitpush();  
-        });
-        async function Gitpush() {
-            await inquirer
-                .prompt([
-                    {
-                        type: "input",
-                        message: "请输入提交消息",
-                        name: "commit",
-                        default: "[mod] init",
-                    },
-                ])
-                .then((answers) => {
-                    commit = answers.commit;
-                });
-            const start_continuous = continuous("正在添加中...");
-
-            await git
-                .add("./*")
-                .then(() => {
-                    clearInterval(start_continuous);
-                    console.log(chalk.green("添加成功"));
-                })
-                .catch(() => {
-                    clearInterval(start_continuous);
-                    console.log(chalk.red("添加失败"));
-                });
-            const war_continuous = continuous("正在提交中...");
-            await git
-                .commit(commit)
-                .then(() => {
-                    clearInterval(war_continuous);
-                    console.log(chalk.green("提交成功"));
-                })
-                .catch(() => {
-                    clearInterval(war_continuous);
-                    console.log(chalk.red("提交失败"));
-                });
-            const success = continuous("正在推送中...");
-            await git
-                .push(origin_name, currentBranch)
-                .then(() => {
-                    clearInterval(success);
-                    console.log(chalk.green("推送成功"));
-                })
-                .catch(() => {
-                    clearInterval(success);
-                    console.log(chalk.yellow("推送失败"));
-                });
-        }
     } catch (error) {
         console.log("error" + error);
     }
-})();
+}
 
 function continuous(params) {
     return setInterval(() => {
@@ -377,4 +332,55 @@ async function count_length() {
             });
         }
     }
+}
+async function Gitpush() {
+    await inquirer
+        .prompt([
+            {
+                type: "input",
+                message: "请输入提交消息",
+                name: "commit",
+                default: "[mod] init",
+            },
+        ])
+        .then((answers) => {
+            commit = answers.commit;
+        });
+    const start_continuous = continuous("正在添加中...");
+
+    await git
+        .add("./*")
+        .then(() => {
+            clearInterval(start_continuous);
+            console.log(chalk.green("添加成功"));
+        })
+        .catch(() => {
+            clearInterval(start_continuous);
+            console.log(chalk.red("添加失败"));
+            process.exit();
+        });
+    const war_continuous = continuous("正在提交中...");
+    await git
+        .commit(commit)
+        .then(() => {
+            clearInterval(war_continuous);
+            console.log(chalk.green("提交成功"));
+        })
+        .catch(() => {
+            clearInterval(war_continuous);
+            console.log(chalk.red("提交失败"));
+            process.exit();
+        });
+    const success = continuous("正在推送中...");
+    await git
+        .push(origin_name, currentBranch)
+        .then(() => {
+            clearInterval(success);
+            console.log(chalk.green("推送成功"));
+        })
+        .catch(() => {
+            clearInterval(success);
+            console.log(chalk.yellow("推送失败"));
+            process.exit();
+        });
 }

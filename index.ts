@@ -22,6 +22,7 @@ let target_index = 0;
 let target_len = 0;
 let data_origin;
 let def_val = false;
+let del_gitpush = true;
 
 (async function main() {
     try {
@@ -51,11 +52,18 @@ let def_val = false;
                         done("请输入目标文件的绝对路径如:C:\\index\\dad");
                     },
                 },
+                {
+                    type: "confirm",
+                    name: "choice",
+                    message: `是否需要复制文件`,
+                    default: true,
+                },
             ])
             .then((answers) => {
-                const {file_url, url} = answers;
+                const {file_url, url,choice} = answers;
                 file_name = file_url;
                 target_url = url;
+                del_gitpush = choice;
             });
         if (!fs.existsSync(file_name)) return console.log(chalk.red(`未发现${file_name}目录`));
         const list = fs.readdirSync(file_name);
@@ -205,10 +213,12 @@ let def_val = false;
         });
         await count_length();
         let temporary;
-        new Promise(async (resolve) => {
+        new Promise(async (resolve,rej) => {
             await resolvefile();
             temporary = setInterval(() => {
-                if (target_index === target_len) {
+                if (!del_gitpush) {
+                    return rej('')
+                } else if (target_index === target_len) {
                     console.log(`${target_index}个文件/目录${chalk.green("已全部删除")}`);
                     return resolve("");
                 }
@@ -221,6 +231,9 @@ let def_val = false;
             }).then(() => {
                 Gitpush();
             });
+        }).catch(()=>{
+            clearInterval(temporary);
+            Gitpush();  
         });
         async function Gitpush() {
             await inquirer

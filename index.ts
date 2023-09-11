@@ -260,7 +260,7 @@ let def_val = false;
                 });
             const success = continuous("正在推送中...");
             await git
-                .push(["-f", "-u", origin_name, currentBranch])
+                .push(origin_name, currentBranch)
                 .then(() => {
                     clearInterval(success);
                     console.log(chalk.green("推送成功"));

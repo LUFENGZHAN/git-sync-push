@@ -1,6 +1,6 @@
 {
   "name": "git-sync-push",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "",
   "main": "index.ts",
   "bin": "index.ts",

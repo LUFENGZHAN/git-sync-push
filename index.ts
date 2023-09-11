@@ -127,7 +127,7 @@ async function main() {
                             //         remote_branch = branch;
                             //     });
                         } else {
-                            process.exit();
+                            process.exit(1);
                         }
                     });
             });
@@ -139,7 +139,7 @@ async function main() {
         await git.listRemote(["--refs"], async (err, data) => {
             if (err) {
                 console.error(err, "err");
-                process.exit();
+                process.exit(1);
             }
             // 解析输出并获取分支列表
             branchesList = data
@@ -150,7 +150,7 @@ async function main() {
         await git.getRemotes(async (err, data) => {
             if (err) {
                 console.error(err, "err");
-                process.exit();
+                process.exit(1);
             }
             data_origin = data.map((v) => v.name);
             console.log(chalk.green("已存在的远程仓库有", data_origin));
@@ -267,7 +267,7 @@ async function existsSyncFn() {
     arr_new = await arr_new.filter((v, i, arrs) => arrs.indexOf(v) === i);
     if (arr.length !== arr_new.length) {
         console.log(chalk.red(`创建失败`));
-        return process.exit();
+        return process.exit(1);
     }
     await arr_new.forEach(async (v, i, arr) => {
         if (!fs.existsSync(v)) {
@@ -284,7 +284,7 @@ function resolvefile() {
             fs.rm(sourcePath, {recursive: true}, (err) => {
                 if (err) {
                     console.log(chalk.red(err));
-                    return process.exit();
+                    return process.exit(1);
                 }
                 target_index++;
                 console.log(`删除原有文${chalk.yellow(file)}——————${target_index}/${chalk.green(target_len)}`);
@@ -357,7 +357,7 @@ async function Gitpush() {
         .catch(() => {
             clearInterval(start_continuous);
             console.log(chalk.red("添加失败"));
-            process.exit();
+            process.exit(1);
         });
     const war_continuous = continuous("正在提交中...");
     await git
@@ -369,7 +369,7 @@ async function Gitpush() {
         .catch(() => {
             clearInterval(war_continuous);
             console.log(chalk.red("提交失败"));
-            process.exit();
+            process.exit(1);
         });
     const success = continuous("正在推送中...");
     await git
@@ -381,6 +381,6 @@ async function Gitpush() {
         .catch(() => {
             clearInterval(success);
             console.log(chalk.yellow("推送失败"));
-            process.exit();
+            process.exit(1);
         });
 }

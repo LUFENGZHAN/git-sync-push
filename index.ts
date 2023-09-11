@@ -60,17 +60,7 @@ let def_val = false;
         if (!fs.existsSync(file_name)) return console.log(chalk.red(`未发现${file_name}目录`));
         const list = fs.readdirSync(file_name);
         copyFolderSync_index(file_name, target_url);
-        if (fs.existsSync(target_url)) {
-            const target_list = fs.readdirSync(target_url);
-            if (target_list) {
-                target_list.forEach((value, i) => {
-                    if (value !== ".git") {
-                        target_len++;
-                        console.log("将会删除" + chalk.yellow(value) + "文件", i);
-                    }
-                });
-            }
-        }
+        await count_length();
         if (list.length === 0) return console.log(chalk.red(`${file_name}目录为空`));
         await existsSyncFn();
         const git = simpleGit(target_url);
@@ -127,6 +117,8 @@ let def_val = false;
                             //         remote_url = url;
                             //         remote_branch = branch;
                             //     });
+                        } else {
+                            process.exit();
                         }
                     });
             });
@@ -211,13 +203,14 @@ let def_val = false;
             console.log(chalk.green(`已成功拉取${origin_name}分支代码至${origin_name}`));
             return git.pull(origin_name, currentBranch);
         });
+        await count_length();
         let temporary;
         new Promise(async (resolve) => {
             await resolvefile();
             temporary = setInterval(() => {
                 if (target_index === target_len) {
                     console.log(`${target_index}个文件/目录${chalk.green("已全部删除")}`);
-                    return resolve('')
+                    return resolve("");
                 }
             }, 500);
         }).then(() => {
@@ -326,7 +319,7 @@ function resolvefile() {
                     return process.exit();
                 }
                 target_index++;
-                console.log(`删除原有文${chalk.yellow(file)}————————————${target_index}/${chalk.green(target_len)}`);
+                console.log(`删除原有文${chalk.yellow(file)}——————${target_index}/${chalk.green(target_len)}`);
             });
         }
     });
@@ -343,7 +336,7 @@ function copyFolderSync(source, target) {
         } else {
             value_index++;
             fs.copyFileSync(sourcePath, targetPath);
-            console.log(`生成新文件${file}—————————————` + "(" + `${value_index}/` + chalk.green(index_value) + ")");
+            console.log(`生成新文件${file}——————————` + "(" + `${value_index}/` + chalk.green(index_value) + ")");
         }
     });
 }
@@ -358,4 +351,17 @@ function copyFolderSync_index(source, target) {
             index_value++;
         }
     });
+}
+async function count_length() {
+    if (fs.existsSync(target_url)) {
+        target_len = 0;
+        const target_list = fs.readdirSync(target_url);
+        if (target_list) {
+            target_list.forEach((value, i) => {
+                if (value !== ".git") {
+                    target_len++;
+                }
+            });
+        }
+    }
 }

@@ -8,7 +8,7 @@ npm install  git-sync-push -g
 # 使用说明
 运行脚本 
 ```
-终端输入 git-sync-push 
+终端输入 git-sync-push 或 gitsyncpush
 ```
 第一步：请选择需要推送的文件默认: dist文件目录
 ```

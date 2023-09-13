@@ -1,9 +1,11 @@
 {
   "name": "git-sync-push",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "",
   "main": "index.ts",
-  "bin": "index.ts",
+  "bin":{
+    "gitsyncpush": "index.ts"
+  },
   "author": "lfz",
   "license": "MIT",
   "exclude": [

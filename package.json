@@ -3,7 +3,7 @@
   "version": "0.1.20",
   "description": "",
   "main": "./bin/index.js",
-  "bin":{
+  "bin": {
     "gitsyncpush": "./bin/index.js"
   },
   "author": "lfz",
@@ -14,7 +14,9 @@
   "devDependencies": {
     "@types/node": "^20.5.9"
   },
-  "files": ["bin"],
+  "files": [
+    "bin"
+  ],
   "dependencies": {
     "chalk": "^3.0.0",
     "fs": "^0.0.1-security",

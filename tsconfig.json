@@ -6,6 +6,7 @@
     "resolveJsonModule": true,
     "downlevelIteration": true,
     "esModuleInterop": true,
+    "alwaysStrict":true,
     "outDir": "./bin"
   },
   "exclude": [

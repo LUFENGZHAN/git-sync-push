@@ -26,8 +26,7 @@ npm install  git-sync-push -g
 有提示目标文件有几个远程名 默认origin
 ```
 第四步：是否使用当前分支进行同步并推送，
-```
-```
+
 第二种方式
 ```
 终端输入 git-sync-push 或 gitsyncpush 加地址 只需输入提交信息可直接推送

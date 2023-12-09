@@ -6,6 +6,7 @@
 npm install  git-sync-push -g
 ```
 # 使用说明
+第一种方式
 运行脚本 
 ```
 终端输入 git-sync-push 或 gitsyncpush
@@ -26,3 +27,8 @@ npm install  git-sync-push -g
 ```
 第四步：是否使用当前分支进行同步并推送，
 ```
+```
+第二种方式
+```
+终端输入 git-sync-push 或 gitsyncpush 加地址 只需输入提交信息可直接推送
+如: gitsyncpush C:/dist 即可

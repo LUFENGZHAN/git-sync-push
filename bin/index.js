@@ -45,7 +45,7 @@ var workingDir = process.cwd();
 // default value
 var branchesList = [];
 var currentBranch = "";
-var file_name = "";
+var file_name = "dist";
 var target_url = "";
 var commit = "";
 var origin_name = "";
@@ -60,15 +60,31 @@ var data_origin;
 var def_val = false;
 var del_gitpush = false;
 var git;
-main();
-function main() {
+var regpath = new RegExp(/([a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+,)*[a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+(\\?)*$/g);
+var reg_one = new RegExp(/^([a-zA-Z]:)(\\[^/\\:*?"<>|]+\\?)*$/g);
+var argv = process.argv[2];
+if (argv) {
+    if (regpath.test(argv) || reg_one.test(argv)) {
+        target_url = argv;
+        main(false);
+    }
+    else {
+        console.log(chalk.red("\u8BF7\u8F93\u5165\u6B63\u786E\u7684\u5730\u5740\u5982:C:\\index"));
+    }
+}
+else {
+    main(true);
+}
+function main(is_argv) {
+    if (is_argv === void 0) { is_argv = true; }
     return __awaiter(this, void 0, void 0, function () {
         var list, temporary_1, error_1;
         var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 16, , 17]);
+                    _a.trys.push([0, 19, , 20]);
+                    if (!is_argv) return [3 /*break*/, 2];
                     console.log(chalk.green("使用 shift + ins 键实现粘贴内容"));
                     return [4 /*yield*/, inquirer
                             .prompt([
@@ -85,12 +101,7 @@ function main() {
                                 default: "C:\\dist",
                                 validate: function (val) {
                                     var done = this.async();
-                                    var reg = new RegExp(/([a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+,)*[a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+(\\?)*$/g);
-                                    var reg_one = new RegExp(/^([a-zA-Z]:)(\\[^/\\:*?"<>|]+\\?)*$/g);
-                                    if (reg.test(val)) {
-                                        done(null, true);
-                                    }
-                                    else if (reg_one.test(val)) {
+                                    if (regpath.test(val) || reg_one.test(val)) {
                                         done(null, true);
                                     }
                                     done("请输入目标文件的绝对路径如:C:\\index\\dad");
@@ -111,17 +122,19 @@ function main() {
                         })];
                 case 1:
                     _a.sent();
+                    _a.label = 2;
+                case 2:
                     if (!fs.existsSync(file_name))
                         return [2 /*return*/, console.log(chalk.red("\u672A\u53D1\u73B0".concat(file_name, "\u76EE\u5F55")))];
                     list = fs.readdirSync(file_name);
                     copyFolderSync_index(file_name, target_url);
                     return [4 /*yield*/, count_length()];
-                case 2:
+                case 3:
                     _a.sent();
                     if (list.length === 0)
                         return [2 /*return*/, console.log(chalk.red("".concat(file_name, "\u76EE\u5F55\u4E3A\u7A7A")))];
                     return [4 /*yield*/, existsSyncFn()];
-                case 3:
+                case 4:
                     _a.sent();
                     git = simpleGit(target_url);
                     return [4 /*yield*/, git
@@ -148,41 +161,6 @@ function main() {
                                                     choice = answers.choice;
                                                     if (choice) {
                                                         copyFolderSync(file_name, target_url);
-                                                        // await inquirer
-                                                        //     .prompt([
-                                                        //         {
-                                                        //             type: "input",
-                                                        //             name: "name",
-                                                        //             message: "请输入远程仓库名称",
-                                                        //             default: "origin",
-                                                        //         },
-                                                        //         {
-                                                        //             type: "input",
-                                                        //             name: "url",
-                                                        //             message: "请输入远程仓库地址",
-                                                        //             default: "http|https",
-                                                        //             validate: function (val) {
-                                                        //                 const done = this.async();
-                                                        //                 const reg = new RegExp(/(http|https):\/\/([\w.]+\/?)\S*/, "g");
-                                                        //                 if (reg.test(val)) {
-                                                        //                     done(null, true);
-                                                        //                 }
-                                                        //                 done("请输入远程仓库地址");
-                                                        //             },
-                                                        //         },
-                                                        //         {
-                                                        //             type: "input",
-                                                        //             name: "url",
-                                                        //             message: "请输入远程分支名",
-                                                        //             default: "master",
-                                                        //         },
-                                                        //     ])
-                                                        //     .then((answers) => {
-                                                        //         const {name, url, branch} = answers;
-                                                        //         remote_name = name;
-                                                        //         remote_url = url;
-                                                        //         remote_branch = branch;
-                                                        //     });
                                                     }
                                                     else {
                                                         process.exit(1);
@@ -196,7 +174,7 @@ function main() {
                                 }
                             });
                         }); })];
-                case 4:
+                case 5:
                     _a.sent();
                     return [4 /*yield*/, git.branch(function (error, result) {
                             if (error)
@@ -204,7 +182,7 @@ function main() {
                             else
                                 currentBranch = result.current;
                         })];
-                case 5:
+                case 6:
                     _a.sent();
                     return [4 /*yield*/, git.listRemote(["--refs"], function (err, data) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
@@ -220,7 +198,7 @@ function main() {
                                 return [2 /*return*/];
                             });
                         }); })];
-                case 6:
+                case 7:
                     _a.sent();
                     return [4 /*yield*/, git.getRemotes(function (err, data) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
@@ -233,8 +211,9 @@ function main() {
                                 return [2 /*return*/];
                             });
                         }); })];
-                case 7:
+                case 8:
                     _a.sent();
+                    if (!is_argv) return [3 /*break*/, 15];
                     return [4 /*yield*/, inquirer
                             .prompt([
                             {
@@ -255,9 +234,9 @@ function main() {
                             var originName = answers.originName;
                             origin_name = originName;
                         })];
-                case 8:
+                case 9:
                     _a.sent();
-                    if (!currentBranch) return [3 /*break*/, 10];
+                    if (!currentBranch) return [3 /*break*/, 11];
                     return [4 /*yield*/, inquirer
                             .prompt([
                             {
@@ -270,14 +249,14 @@ function main() {
                             .then(function (answers) {
                             def_val = answers.choice;
                         })];
-                case 9:
-                    _a.sent();
-                    return [3 /*break*/, 11];
                 case 10:
-                    def_val = false;
-                    _a.label = 11;
+                    _a.sent();
+                    return [3 /*break*/, 12];
                 case 11:
-                    if (!!def_val) return [3 /*break*/, 13];
+                    def_val = false;
+                    _a.label = 12;
+                case 12:
+                    if (!!def_val) return [3 /*break*/, 14];
                     return [4 /*yield*/, inquirer
                             .prompt([
                             {
@@ -293,17 +272,21 @@ function main() {
                             .then(function (answers) {
                             currentBranch = answers.choice;
                         })];
-                case 12:
+                case 13:
                     _a.sent();
-                    _a.label = 13;
-                case 13: return [4 /*yield*/, git.checkout(currentBranch).then(function () {
-                        console.log(chalk.green("\u5DF2\u6210\u529F\u62C9\u53D6".concat(origin_name, "\u5206\u652F\u4EE3\u7801\u81F3").concat(origin_name)));
+                    _a.label = 14;
+                case 14: return [3 /*break*/, 16];
+                case 15:
+                    origin_name = data_origin[0];
+                    _a.label = 16;
+                case 16: return [4 /*yield*/, git.checkout(currentBranch).then(function () {
+                        console.log(chalk.green("\u5DF2\u6210\u529F\u62C9\u53D6".concat(origin_name, "\u8FDC\u7A0B\u4ED3\u5E93\u4EE3\u7801\u81F3").concat(origin_name, "\u672C\u5730\u4ED3\u5E93")));
                         return git.pull(origin_name, currentBranch);
                     })];
-                case 14:
+                case 17:
                     _a.sent();
                     return [4 /*yield*/, count_length()];
-                case 15:
+                case 18:
                     _a.sent();
                     new Promise(function (resolve, rej) { return __awaiter(_this, void 0, void 0, function () {
                         return __generator(this, function (_a) {
@@ -345,12 +328,12 @@ function main() {
                         clearInterval(temporary_1);
                         Gitpush();
                     });
-                    return [3 /*break*/, 17];
-                case 16:
+                    return [3 /*break*/, 20];
+                case 19:
                     error_1 = _a.sent();
                     console.log("error" + error_1);
-                    return [3 /*break*/, 17];
-                case 17: return [2 /*return*/];
+                    return [3 /*break*/, 20];
+                case 20: return [2 /*return*/];
             }
         });
     });
@@ -487,7 +470,7 @@ function Gitpush() {
                             type: "input",
                             message: "请输入提交消息",
                             name: "commit",
-                            default: "[mod] init",
+                            default: "[mod] update page",
                         },
                     ])
                         .then(function (answers) {

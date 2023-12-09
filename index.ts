@@ -9,7 +9,7 @@ const workingDir = process.cwd();
 // default value
 let branchesList = [];
 let currentBranch = "";
-let file_name = "";
+let file_name = "dist";
 let target_url = "";
 let commit = "";
 let origin_name = "";
@@ -24,48 +24,59 @@ let data_origin;
 let def_val = false;
 let del_gitpush = false;
 let git;
-main()
-async function main() {
+const regpath = new RegExp(/([a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+,)*[a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+(\\?)*$/g);
+const reg_one = new RegExp(/^([a-zA-Z]:)(\\[^/\\:*?"<>|]+\\?)*$/g);
+const argv = process.argv[2]
+if (argv) {
+    if (regpath.test(argv) || reg_one.test(argv)) {
+        target_url = argv
+        main(false) 
+    } else {
+        console.log(chalk.red(`请输入正确的地址如:C:\\index`))
+    }
+} else {
+    main(true)
+}
+async function main(is_argv = true) {
     try {
-        console.log(chalk.green("使用 shift + ins 键实现粘贴内容"));
-        await inquirer
-            .prompt([
-                {
-                    type: "input",
-                    message: "请选择需要发布的文件",
-                    name: "file_url",
-                    default: "dist",
-                },
-                {
-                    type: "input",
-                    message: "请输入目标文件的绝对路径",
-                    name: "url",
-                    default: "C:\\dist",
-                    validate: function (val) {
-                        const done = this.async();
-                        const reg = new RegExp(/([a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+,)*[a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+(\\?)*$/g);
-                        const reg_one = new RegExp(/^([a-zA-Z]:)(\\[^/\\:*?"<>|]+\\?)*$/g);
-                        if (reg.test(val)) {
-                            done(null, true);
-                        } else if (reg_one.test(val)) {
-                            done(null, true);
-                        }
-                        done("请输入目标文件的绝对路径如:C:\\index\\dad");
+        if (is_argv) {
+            console.log(chalk.green("使用 shift + ins 键实现粘贴内容"));
+            await inquirer
+                .prompt([
+                    {
+                        type: "input",
+                        message: "请选择需要发布的文件",
+                        name: "file_url",
+                        default: "dist",
                     },
-                },
-                {
-                    type: "confirm",
-                    name: "choice",
-                    message: `仅推送不复制文件`,
-                    default: false,
-                },
-            ])
-            .then((answers) => {
-                const {file_url, url, choice} = answers;
-                file_name = file_url;
-                target_url = url;
-                del_gitpush = choice;
-            });
+                    {
+                        type: "input",
+                        message: "请输入目标文件的绝对路径",
+                        name: "url",
+                        default: "C:\\dist",
+                        validate: function (val) {
+                            const done = this.async();
+                            if (regpath.test(val) || reg_one.test(val)) {
+                                done(null, true);
+                            }
+                            done("请输入目标文件的绝对路径如:C:\\index\\dad");
+                        },
+                    },
+                    {
+                        type: "confirm",
+                        name: "choice",
+                        message: `仅推送不复制文件`,
+                        default: false,
+                    },
+                ])
+                .then((answers) => {
+                    const { file_url, url, choice } = answers;
+                    file_name = file_url;
+                    target_url = url;
+                    del_gitpush = choice;
+                });
+        }
+
         if (!fs.existsSync(file_name)) return console.log(chalk.red(`未发现${file_name}目录`));
         const list = fs.readdirSync(file_name);
         copyFolderSync_index(file_name, target_url);
@@ -75,7 +86,7 @@ async function main() {
         git = simpleGit(target_url);
         await git
             .status()
-            .then(() => {})
+            .then(() => { })
             .catch(async () => {
                 console.log(chalk.red("该目录不属于.git仓库"));
                 await inquirer
@@ -88,44 +99,9 @@ async function main() {
                         },
                     ])
                     .then(async (answers) => {
-                        const {choice} = answers;
+                        const { choice } = answers;
                         if (choice) {
                             copyFolderSync(file_name, target_url);
-                            // await inquirer
-                            //     .prompt([
-                            //         {
-                            //             type: "input",
-                            //             name: "name",
-                            //             message: "请输入远程仓库名称",
-                            //             default: "origin",
-                            //         },
-                            //         {
-                            //             type: "input",
-                            //             name: "url",
-                            //             message: "请输入远程仓库地址",
-                            //             default: "http|https",
-                            //             validate: function (val) {
-                            //                 const done = this.async();
-                            //                 const reg = new RegExp(/(http|https):\/\/([\w.]+\/?)\S*/, "g");
-                            //                 if (reg.test(val)) {
-                            //                     done(null, true);
-                            //                 }
-                            //                 done("请输入远程仓库地址");
-                            //             },
-                            //         },
-                            //         {
-                            //             type: "input",
-                            //             name: "url",
-                            //             message: "请输入远程分支名",
-                            //             default: "master",
-                            //         },
-                            //     ])
-                            //     .then((answers) => {
-                            //         const {name, url, branch} = answers;
-                            //         remote_name = name;
-                            //         remote_url = url;
-                            //         remote_branch = branch;
-                            //     });
                         } else {
                             process.exit(1);
                         }
@@ -155,61 +131,65 @@ async function main() {
             data_origin = data.map((v) => v.name);
             console.log(chalk.green("已存在的远程仓库有", data_origin));
         });
-        await inquirer
-            .prompt([
-                {
-                    type: "input",
-                    message: "请输入远程仓库名称",
-                    name: "originName",
-                    default: "origin",
-                    validate: function (val) {
-                        const done = this.async();
-                        if (data_origin.includes(val)) {
-                            done(null, true);
-                        }
-                        done("请输入存在的远程仓库");
-                    },
-                },
-            ])
-            .then((answers) => {
-                const {originName} = answers;
-                origin_name = originName;
-            });
-        if (currentBranch) {
+        if (is_argv) {
             await inquirer
                 .prompt([
                     {
-                        type: "confirm",
-                        name: "choice",
-                        message: `是否使用当前${currentBranch}分支进行同步并推送`,
-                        default: true,
+                        type: "input",
+                        message: "请输入远程仓库名称",
+                        name: "originName",
+                        default: "origin",
+                        validate: function (val) {
+                            const done = this.async();
+                            if (data_origin.includes(val)) {
+                                done(null, true);
+                            }
+                            done("请输入存在的远程仓库");
+                        },
                     },
                 ])
                 .then((answers) => {
-                    def_val = answers.choice;
+                    const { originName } = answers;
+                    origin_name = originName;
                 });
+            if (currentBranch) {
+                await inquirer
+                    .prompt([
+                        {
+                            type: "confirm",
+                            name: "choice",
+                            message: `是否使用当前${currentBranch}分支进行同步并推送`,
+                            default: true,
+                        },
+                    ])
+                    .then((answers) => {
+                        def_val = answers.choice;
+                    });
+            } else {
+                def_val = false;
+            }
+            if (!def_val) {
+                await inquirer
+                    .prompt([
+                        {
+                            type: "list",
+                            name: "choice",
+                            message: "请选择需要推送的分支：",
+                            default: 0,
+                            choices: branchesList.map((v) => {
+                                return { name: v, value: v };
+                            }),
+                        },
+                    ])
+                    .then((answers) => {
+                        currentBranch = answers.choice;
+                    });
+            }
         } else {
-            def_val = false;
-        }
-        if (!def_val) {
-            await inquirer
-                .prompt([
-                    {
-                        type: "list",
-                        name: "choice",
-                        message: "请选择需要推送的分支：",
-                        default: 0,
-                        choices: branchesList.map((v) => {
-                            return {name: v, value: v};
-                        }),
-                    },
-                ])
-                .then((answers) => {
-                    currentBranch = answers.choice;
-                });
+            origin_name = data_origin[0]
         }
         await git.checkout(currentBranch).then(() => {
-            console.log(chalk.green(`已成功拉取${origin_name}分支代码至${origin_name}`));
+            console.log(chalk.green(`已成功拉取${origin_name}远程仓库代码至${origin_name}本地仓库`));
             return git.pull(origin_name, currentBranch);
         });
         await count_length();
@@ -281,7 +261,7 @@ function resolvefile() {
     resolvefilelist.forEach((file) => {
         const sourcePath = path.join(target_url, file);
         if (file !== ".git") {
-            fs.rm(sourcePath, {recursive: true}, (err) => {
+            fs.rm(sourcePath, { recursive: true }, (err) => {
                 if (err) {
                     console.log(chalk.red(err));
                     return process.exit(1);
@@ -340,7 +320,7 @@ async function Gitpush() {
                 type: "input",
                 message: "请输入提交消息",
                 name: "commit",
-                default: "[mod] init",
+                default: "[mod] update page",
             },
         ])
         .then((answers) => {

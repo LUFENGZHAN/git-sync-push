@@ -5,6 +5,7 @@ const fs = require("fs");
 const chalk = require("chalk");
 const path = require("path");
 const workingDir = process.cwd();
+const requiredVersion = "14.16.1"
 
 // default value
 let branchesList = [];
@@ -27,15 +28,20 @@ let git;
 const regpath = new RegExp(/([a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+,)*[a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+(\\?)*$/g);
 const reg_one = new RegExp(/^([a-zA-Z]:)(\\[^/\\:*?"<>|]+\\?)*$/g);
 const argv = process.argv[2]
-if (argv) {
-    if (regpath.test(argv) || reg_one.test(argv)) {
-        target_url = argv
-        main(false) 
-    } else {
-        console.log(chalk.red(`请输入正确的地址如:C:\\index`))
-    }
+if (parseFloat(process.versions.node) < parseFloat(requiredVersion)) {
+    console.error(`需要 Node.js 版本 ${requiredVersion} 或更高版本来运行此脚本`);
+    process.exit(1);
 } else {
-    main(true)
+    if (argv) {
+        if (regpath.test(argv) || reg_one.test(argv)) {
+            target_url = argv
+            main(false)
+        } else {
+            console.log(chalk.red(`请输入正确的地址如:C:\\index`))
+        }
+    } else {
+        main(true)
+    }
 }
 async function main(is_argv = true) {
     try {

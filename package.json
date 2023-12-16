@@ -1,6 +1,6 @@
 {
   "name": "git-sync-push",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "",
   "main": "./bin/index.js",
   "bin": {
@@ -13,6 +13,9 @@
   ],
   "devDependencies": {
     "@types/node": "^20.5.9"
+  },
+  "engines": {
+    "node": ">=14.16.1"
   },
   "files": [
     "bin"

@@ -31,3 +31,6 @@ npm install  git-sync-push -g
 ```
 终端输入 git-sync-push 或 gitsyncpush 加地址 只需输入提交信息可直接推送
 如: gitsyncpush C:/dist 即可
+```
+### 注意
+1. node版本要求>=14.16.1

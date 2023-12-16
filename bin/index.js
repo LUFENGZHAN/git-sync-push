@@ -42,6 +42,7 @@ var fs = require("fs");
 var chalk = require("chalk");
 var path = require("path");
 var workingDir = process.cwd();
+var requiredVersion = "14.16.1";
 // default value
 var branchesList = [];
 var currentBranch = "";
@@ -63,17 +64,23 @@ var git;
 var regpath = new RegExp(/([a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+,)*[a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+(\\?)*$/g);
 var reg_one = new RegExp(/^([a-zA-Z]:)(\\[^/\\:*?"<>|]+\\?)*$/g);
 var argv = process.argv[2];
-if (argv) {
-    if (regpath.test(argv) || reg_one.test(argv)) {
-        target_url = argv;
-        main(false);
-    }
-    else {
-        console.log(chalk.red("\u8BF7\u8F93\u5165\u6B63\u786E\u7684\u5730\u5740\u5982:C:\\index"));
-    }
+if (parseFloat(process.versions.node) < parseFloat(requiredVersion)) {
+    console.error("\u9700\u8981 Node.js \u7248\u672C ".concat(requiredVersion, " \u6216\u66F4\u9AD8\u7248\u672C\u6765\u8FD0\u884C\u6B64\u811A\u672C"));
+    process.exit(1);
 }
 else {
-    main(true);
+    if (argv) {
+        if (regpath.test(argv) || reg_one.test(argv)) {
+            target_url = argv;
+            main(false);
+        }
+        else {
+            console.log(chalk.red("\u8BF7\u8F93\u5165\u6B63\u786E\u7684\u5730\u5740\u5982:C:\\index"));
+        }
+    }
+    else {
+        main(true);
+    }
 }
 function main(is_argv) {
     if (is_argv === void 0) { is_argv = true; }

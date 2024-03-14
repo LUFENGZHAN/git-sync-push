@@ -4,7 +4,8 @@
   "description": "",
   "main": "./bin/index.js",
   "bin": {
-    "gitsyncpush": "./bin/index.js"
+    "gitsyncpush": "./bin/index.js",
+    "git-sync-push": "./bin/index.js"
   },
   "author": "lfz",
   "license": "MIT",

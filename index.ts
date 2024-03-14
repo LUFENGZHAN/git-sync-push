@@ -23,7 +23,6 @@ let target_index = 0;
 let target_len = 0;
 let data_origin;
 let def_val = false;
-let del_gitpush = false;
 let git;
 const regpath = new RegExp(/([a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+,)*[a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+(\\?)*$/g);
 const reg_one = new RegExp(/^([a-zA-Z]:)(\\[^/\\:*?"<>|]+\\?)*$/g);
@@ -67,19 +66,12 @@ async function main(is_argv = true) {
                             }
                             done("请输入目标文件的绝对路径如:C:\\index\\dad");
                         },
-                    },
-                    {
-                        type: "confirm",
-                        name: "choice",
-                        message: `仅推送不复制文件`,
-                        default: false,
-                    },
+                    }
                 ])
                 .then((answers) => {
-                    const { file_url, url, choice } = answers;
+                    const { file_url, url } = answers;
                     file_name = file_url;
                     target_url = url;
-                    del_gitpush = choice;
                 });
         }
 
@@ -203,9 +195,7 @@ async function main(is_argv = true) {
         new Promise(async (resolve, rej) => {
             await resolvefile();
             temporary = setInterval(() => {
-                if (del_gitpush) {
-                    return rej("");
-                } else if (target_index === target_len) {
+                if (target_index === target_len) {
                     console.log(`${target_index}个文件/目录${chalk.green("已全部删除")}`);
                     return resolve("");
                 }

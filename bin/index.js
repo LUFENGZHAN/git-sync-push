@@ -59,7 +59,6 @@ var target_index = 0;
 var target_len = 0;
 var data_origin;
 var def_val = false;
-var del_gitpush = false;
 var git;
 var regpath = new RegExp(/([a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+,)*[a-zA-Z]:(([\\\\/])[^\\\\/:*?<>|]+)*([\\\\/])[^\\\\/:*?<>|]+\\.[^\\\\/:*?<>|]+(\\?)*$/g);
 var reg_one = new RegExp(/^([a-zA-Z]:)(\\[^/\\:*?"<>|]+\\?)*$/g);
@@ -82,11 +81,11 @@ else {
         main(true);
     }
 }
-function main(is_argv) {
-    if (is_argv === void 0) { is_argv = true; }
-    return __awaiter(this, void 0, void 0, function () {
+function main() {
+    return __awaiter(this, arguments, void 0, function (is_argv) {
         var list, temporary_1, error_1;
         var _this = this;
+        if (is_argv === void 0) { is_argv = true; }
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -113,19 +112,12 @@ function main(is_argv) {
                                     }
                                     done("请输入目标文件的绝对路径如:C:\\index\\dad");
                                 },
-                            },
-                            {
-                                type: "confirm",
-                                name: "choice",
-                                message: "\u4EC5\u63A8\u9001\u4E0D\u590D\u5236\u6587\u4EF6",
-                                default: false,
-                            },
+                            }
                         ])
                             .then(function (answers) {
-                            var file_url = answers.file_url, url = answers.url, choice = answers.choice;
+                            var file_url = answers.file_url, url = answers.url;
                             file_name = file_url;
                             target_url = url;
-                            del_gitpush = choice;
                         })];
                 case 1:
                     _a.sent();
@@ -302,10 +294,7 @@ function main(is_argv) {
                                 case 1:
                                     _a.sent();
                                     temporary_1 = setInterval(function () {
-                                        if (del_gitpush) {
-                                            return rej("");
-                                        }
-                                        else if (target_index === target_len) {
+                                        if (target_index === target_len) {
                                             console.log("".concat(target_index, "\u4E2A\u6587\u4EF6/\u76EE\u5F55").concat(chalk.green("已全部删除")));
                                             return resolve("");
                                         }

@@ -81,11 +81,11 @@ else {
         main(true);
     }
 }
-function main() {
-    return __awaiter(this, arguments, void 0, function (is_argv) {
+function main(is_argv) {
+    if (is_argv === void 0) { is_argv = true; }
+    return __awaiter(this, void 0, void 0, function () {
         var list, temporary_1, error_1;
         var _this = this;
-        if (is_argv === void 0) { is_argv = true; }
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:

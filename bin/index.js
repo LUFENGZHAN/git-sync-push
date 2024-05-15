@@ -160,6 +160,8 @@ function main(is_argv) {
                                                     choice = answers.choice;
                                                     if (choice) {
                                                         copyFolderSync(file_name, target_url);
+                                                        if (index_value === value_index)
+                                                            return [2 /*return*/, process.exit(1)];
                                                     }
                                                     else {
                                                         process.exit(1);
@@ -307,14 +309,10 @@ function main(is_argv) {
                         clearInterval(temporary_1);
                         new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
                             return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0: return [4 /*yield*/, copyFolderSync(file_name, target_url)];
-                                    case 1:
-                                        _a.sent();
-                                        if (index_value === value_index)
-                                            return [2 /*return*/, resolve("")];
-                                        return [2 /*return*/];
-                                }
+                                copyFolderSync(file_name, target_url);
+                                if (index_value === value_index)
+                                    return [2 /*return*/, resolve("")];
+                                return [2 /*return*/];
                             });
                         }); }).then(function () {
                             Gitpush();

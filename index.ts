@@ -100,6 +100,7 @@ async function main(is_argv = true) {
                         const { choice } = answers;
                         if (choice) {
                             copyFolderSync(file_name, target_url);
+                            if (index_value === value_index) return process.exit(1)
                         } else {
                             process.exit(1);
                         }
@@ -204,7 +205,7 @@ async function main(is_argv = true) {
             .then(() => {
                 clearInterval(temporary);
                 new Promise(async (resolve) => {
-                    await copyFolderSync(file_name, target_url);
+                    copyFolderSync(file_name, target_url);
                     if (index_value === value_index) return resolve("");
                 }).then(() => {
                     Gitpush();
